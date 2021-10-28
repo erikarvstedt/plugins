@@ -7,6 +7,7 @@ from pyln.client import Plugin
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 import asyncio
@@ -19,6 +20,7 @@ import uuid
 metadata = ""
 plugin = Plugin()
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 limiter = Limiter(
     app,
     key_func=get_remote_address,
