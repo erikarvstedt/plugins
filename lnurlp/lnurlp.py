@@ -30,7 +30,8 @@ limiter = Limiter(
 jobs = {}
 
 
-@limiter.limit(lambda: plugin.ratelimitrate, exempt_when=lambda: plugin.ratelimitswitch=="disable")
+#@limiter.limit(lambda: plugin.ratelimitrate, exempt_when=lambda: plugin.ratelimitswitch==False)
+@limiter.limit(lambda: plugin.ratelimitrate, exempt_when=lambda: not plugin.ratelimitswitch)
 @app.route('/payRequest')
 def payRequestUrl():
     global plugin
@@ -72,8 +73,14 @@ def start_server(address, port):
 def init(options, configuration, plugin):
     plugin.address = options["lnurlp-addr"]
     plugin.port = int(options["lnurlp-port"])
-    plugin.ratelimitrate = options.get("lnurlp-ratelimit-rate", "2 per minute")
-    plugin.ratelimitswitch = options.get("lnurlp-ratelimit-switch", "enable")
+    ratelimit = options.get("lnurlp-ratelimit", "2 per minute")
+
+    if ratelimit == "disable":
+        plugin.ratelimitswitch = False
+        plugin.ratelimitrate = "1 per year" # ignored dummy value
+    else:
+        plugin.ratelimitswitch = True
+        plugin.ratelimitrate = ratelimit
 
     try:
         with open(options["lnurlp-meta-path"], 'r') as f:
@@ -107,15 +114,9 @@ plugin.add_option(
 )
 
 plugin.add_option(
-    "lnurlp-ratelimit-rate",
+    "lnurlp-ratelimit",
     "2 per minute",
     "Change flask's ratelimiter, default is 2 per minute"
-)
-
-plugin.add_option(
-    "lnurlp-ratelimit-switch",
-    "enable",
-    "Flask's ratelimiter usage, valid options are 'enable' and 'disable'. Enabled by default."
 )
 
 plugin.run()
