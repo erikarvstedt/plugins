@@ -115,7 +115,7 @@ plugin.add_option(
 plugin.add_option(
     "lnurlp-ratelimit-switch",
     "enable",
-    "Flask's ratelimiter usage, enabled by default"
+    "Flask's ratelimiter usage, valid options are 'enable' and 'disable'. Enabled by default."
 )
 
 plugin.run()
