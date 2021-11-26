@@ -122,3 +122,27 @@ field:
 
 - `--lnurlp-address=... (default 127.0.0.1)`
 - `--lnurlp-port=... (default 8806)`
+
+(optional) You can set whether to use the ratelimiter at all:
+
+- `--lnurlp-ratelimit-switch="disable"`
+
+The ratelimiter is enabled by default.
+
+(optional) You can set the rate of the ratelimiter:
+
+Rate limits are specified as strings following the format:
+```
+[count] [per|/] [n (optional)] [second|minute|hour|day|month|year]
+```
+
+You can combine multiple rate limits by separating them with a delimiter of your choice.
+
+e.g.:
+
+- `--lnurlp-ratelimit-rate="1 per minute"`
+- `--lnurlp-ratelimit-rate="10/hour"`
+- `--lnurlp-ratelimit-rate="2 per 2 minutes;3 per hour;42 per day"`
+- `--lnurlp-ratelimit-rate="100/day, 500/2months"`
+
+Default is "2 per minute".

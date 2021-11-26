@@ -30,9 +30,7 @@ limiter = Limiter(
 jobs = {}
 
 
-@limiter.limit("2 per minute")
-# two per minute because Zebedee has a bug where it does two requests within a
-# few seconds
+@limiter.limit(lambda: plugin.ratelimitrate, exempt_when=lambda: plugin.ratelimitswitch=="disable")
 @app.route('/payRequest')
 def payRequestUrl():
     global plugin
@@ -74,6 +72,8 @@ def start_server(address, port):
 def init(options, configuration, plugin):
     plugin.address = options["lnurlp-addr"]
     plugin.port = int(options["lnurlp-port"])
+    plugin.ratelimitrate = options.get("lnurlp-ratelimit-rate", "2 per minute")
+    plugin.ratelimitswitch = options.get("lnurlp-ratelimit-switch", "enable")
 
     try:
         with open(options["lnurlp-meta-path"], 'r') as f:
@@ -104,6 +104,18 @@ plugin.add_option(
     "lnurlp-meta-path",
     "",
     "Path of the webserver's lnurlp-JSON-file"
+)
+
+plugin.add_option(
+    "lnurlp-ratelimit-rate",
+    "2 per minute",
+    "Change flask's ratelimiter, default is 2 per minute"
+)
+
+plugin.add_option(
+    "lnurlp-ratelimit-switch",
+    "enable",
+    "Flask's ratelimiter usage, enabled by default"
 )
 
 plugin.run()
