@@ -21,17 +21,10 @@ metadata = ""
 plugin = Plugin()
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
-limiter = Limiter(
-    app,
-    key_func=get_remote_address,
-    default_limits=["2000 per day", "20 per minute"]
-)
 
 jobs = {}
 
 
-#@limiter.limit(lambda: plugin.ratelimitrate, exempt_when=lambda: plugin.ratelimitswitch==False)
-@limiter.limit(lambda: plugin.ratelimitrate, exempt_when=lambda: not plugin.ratelimitswitch)
 @app.route('/payRequest')
 def payRequestUrl():
     global plugin
@@ -75,12 +68,12 @@ def init(options, configuration, plugin):
     plugin.port = int(options["lnurlp-port"])
     ratelimit = options.get("lnurlp-ratelimit", "2 per minute")
 
-    if ratelimit == "disable":
-        plugin.ratelimitswitch = False
-        plugin.ratelimitrate = "1 per year" # ignored dummy value
-    else:
-        plugin.ratelimitswitch = True
-        plugin.ratelimitrate = ratelimit
+    if ratelimit != "disable":
+        limiter = Limiter(
+            app,
+            key_func=get_remote_address
+        )
+        limiter.limit(ratelimit)(payRequestUrl)
 
     try:
         with open(options["lnurlp-meta-path"], 'r') as f:
