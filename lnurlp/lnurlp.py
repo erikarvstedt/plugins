@@ -116,7 +116,7 @@ plugin.add_option(
 plugin.add_option(
     "lnurlp-ratelimit",
     "2 per minute",
-    "Change flask's ratelimiter, default is 2 per minute"
+    "Change flask's rate limiter, default is 2 per minute, `disable` to disable"
 )
 
 plugin.run()
